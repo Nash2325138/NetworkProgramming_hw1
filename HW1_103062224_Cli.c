@@ -21,7 +21,7 @@ int main (int argc, char **argv)
 	
 	int servfd, n;
 	char recvline[MAXLINE+1];
-	//char sendline[MAXLINE+1];
+	char sendline[MAXLINE+1];
 	struct sockaddr_in servaddr;
 	if(argc!=3){
 		fprintf(stderr, "Usage: ./<executable file> <server IP> <server port>\n");

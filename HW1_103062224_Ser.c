@@ -18,10 +18,10 @@
 #define MAXLINE 2048
 #define LISTENQ 1024
 
-void showMenu(int sockfd, char *sendline);
-void listDir(int sockfd, char *sendline);
+void showMenu(int clifd, char *sendline);
+void listDir(int clifd, char *sendline);
 ssize_t writen(int fd, const void *vptr, size_t n);
-void hw1_service(int sockfd);
+void hw1_service(int clifd);
 
 void handler(int signo)
 {
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 		}
 	}
 }
-void hw1_service(int sockfd)
+void hw1_service(int clifd)
 {
 	int n;
 	char recvline[MAXLINE+1];
@@ -84,17 +84,32 @@ void hw1_service(int sockfd)
 	if(stat("./Upload", &st) == -1){
 		mkdir("./Upload", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	}
-	showMenu(sockfd, sendline);
-	while( (n=read(sockfd, recvline, MAXLINE)) > 0 )
+	showMenu(clifd, sendline);
+	while( (n=read(clifd, recvline, MAXLINE)) > 0 )
 	{
 		char command[MAXLINE];
 		sscanf(recvline, "%s", command);
+		//fprintf(stdout, "%s\n", command);
+		if(strcmp(command, "cd")==0){
+
+		} else if(strcmp(command, "ls")==0){
+
+		} else if(strcmp(command, "upload")==0){
+
+		} else if(strcmp(command, "download")==0){
+
+		} else if(strcmp(command, "exit")==0){
+
+		} else {
+			sprintf(sendline, "Please enter a valid command\n");
+			write(clifd, sendline, strlen(sendline));
+		}
 	}
 	if(n < 0) perror("read error in hw1_service()");
-	//listDir(sockfd, sendline);
+	//listDir(clifd, sendline);
 }
 
-void listDir(int sockfd, char *sendline)
+void listDir(int clifd, char *sendline)
 {
     DIR *dir;
     struct dirent *entry;
@@ -120,11 +135,11 @@ void listDir(int sockfd, char *sendline)
     int n = strlen(sendline);
     sendline[ n ] = '\n';
     sendline[ n+1 ] = '\0';
-    write(sockfd, sendline, n+1);
+    write(clifd, sendline, n+1);
     return;
 }
 
-void showMenu(int sockfd, char *sendline)
+void showMenu(int clifd, char *sendline)
 {
 	sprintf(sendline, "------------ Five command for client ------------\n");
 	strcat(sendline, " (1) \"cd <dir>\" tp change current directory\n");
@@ -143,8 +158,32 @@ void showMenu(int sockfd, char *sendline)
 	
 	int n = strlen(sendline);
 	sendline[n] = '\0';
-	write(sockfd, sendline, n);
+	write(clifd, sendline, n);
 }
+
+
+
+/* Write "n" bytes to a descriptor. */
+ssize_t writen(int fd, const void *vptr, size_t n)
+{
+	size_t nleft;
+	ssize_t nwritten;
+	const char *ptr;
+	ptr = (const char *)vptr;
+	nleft = n;
+	while (nleft > 0) {
+		if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
+			if (nwritten < 0 && errno == EINTR)
+				nwritten = 0; /* and call write() again */
+			else
+				return (-1); /* error */
+		}
+		nleft -= nwritten;
+		ptr += nwritten;
+ 	}
+	return (n);
+}
+
 
 /*
 int main(int argc, char const *argv[])
@@ -239,24 +278,3 @@ int main(int argc, char const *argv[])
 	return 0;
 }
 */
-
-/* Write "n" bytes to a descriptor. */
-ssize_t writen(int fd, const void *vptr, size_t n)
-{
-	size_t nleft;
-	ssize_t nwritten;
-	const char *ptr;
-	ptr = (const char *)vptr;
-	nleft = n;
-	while (nleft > 0) {
-		if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
-			if (nwritten < 0 && errno == EINTR)
-				nwritten = 0; /* and call write() again */
-			else
-				return (-1); /* error */
-		}
-		nleft -= nwritten;
-		ptr += nwritten;
- 	}
-	return (n);
-}
