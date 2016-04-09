@@ -96,7 +96,7 @@ int main (int argc, char **argv)
 				read(servfd, garbage, sizeof(garbage));
 				sprintf(sendline, "%d", fileSize);
 				write(servfd, sendline, strlen(sendline));
-				fprintf(stdout, "%s\n", sendline);
+				//fprintf(stdout, "%s\n", sendline);
 				read(servfd, garbage, sizeof(garbage));
 
 				transFileTo(servfd, fileToUpload, fileSize, sendline);
@@ -171,7 +171,7 @@ void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline)
 		//fprintf(stdout, "!!!\n%s\n!!!", sendline);
 		//fprintf(stdout, "%d\n", numBytes);
 	}
-	fprintf(stdout, "transfer finish\n");
+	//fprintf(stdout, "transfer finish\n");
 }
 void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
 {
@@ -184,5 +184,5 @@ void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
 		//fprintf(stdout, "!!!\n%s\n!!!", recvline);
 		//fprintf(stdout, "%d\n", numBytes);
 	}
-	fprintf(stdout, "receive finish\n");
+	//fprintf(stdout, "receive finish\n");
 }

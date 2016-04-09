@@ -133,7 +133,7 @@ void hw1_service(int clifd)
 				write(clifd, " ", 1);
 				read(clifd, recvline, MAXLINE);
 				sscanf(recvline, "%d", &fileSize);
-				fprintf(stdout, "%s\n", sendline);
+				//fprintf(stdout, "%s\n", sendline);
 
 				write(clifd, " ", 1);
 				receiveFileFrom(clifd, fileToUpload, fileSize, recvline);
@@ -274,7 +274,7 @@ void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline)
 		//fprintf(stdout, "!!!\n%s\n!!!", sendline);
 		//fprintf(stdout, "%d\n", numBytes);
 	}
-	fprintf(stdout, "transfer finish\n");
+	//fprintf(stdout, "transfer finish\n");
 }
 void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
 {
@@ -288,26 +288,5 @@ void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
 		//fprintf(stdout, "%d\n", numBytes);
 
 	}
-	fprintf(stdout, "receive finish\n");
-}
-/* Wri
-te "n" bytes to a descriptor. */
-ssize_t writen(int fd, const void *vptr, size_t n)
-{
-	size_t nleft;
-	ssize_t nwritten;
-	const char *ptr;
-	ptr = (const char *)vptr;
-	nleft = n;
-	while (nleft > 0) {
-		if ( (nwritten = write(fd, ptr, nleft)) <= 0) {
-			if (nwritten < 0 && errno == EINTR)
-				nwritten = 0; /* and call write() again */
-			else
-				return (-1); /* error */
-		}
-		nleft -= nwritten;
-		ptr += nwritten;
- 	}
-	return (n);
+	//fprintf(stdout, "receive finish\n");
 }
