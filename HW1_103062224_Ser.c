@@ -87,23 +87,32 @@ void hw1_service(int clifd)
 	showMenu(clifd, sendline);
 	while( (n=read(clifd, recvline, MAXLINE)) > 0 )
 	{
+		fprintf(stdout, "%s\n", recvline);
 		char command[MAXLINE];
 		sscanf(recvline, "%s", command);
-		fprintf(stdout, "%s\n", command);
+		//fprintf(stdout, "%s\n", command);
 		if(strcmp(command, "cd")==0){
+			char changePath[200];
+			sscanf(recvline, "cd %s", changePath);
+			if( chdir(changePath) < 0 ) perror("chdir error");
+		}
+		else if (strcmp(command, "ls")==0){
 
-		} else if(strcmp(command, "ls")==0){
+		}
+		else if (strcmp(command, "upload")==0){
 
-		} else if(strcmp(command, "upload")==0){
+		}
+		else if (strcmp(command, "download")==0){
 
-		} else if(strcmp(command, "download")==0){
+		}
+		else if (strcmp(command, "exit")==0){
 
-		} else if(strcmp(command, "exit")==0){
-
-		} else {
+		}
+		else {
 			fprintf(stdout, "Client entered a invalid command\n");
 			// then discard the content of this recvline
 		}
+		showMenu(clifd, sendline);
 	}
 	if(n < 0) perror("read error in hw1_service()");
 	//listDir(clifd, sendline);
@@ -141,13 +150,13 @@ void listDir(int clifd, char *sendline)
 
 void showMenu(int clifd, char *sendline)
 {
-	sprintf(sendline, "------------ Five command for client ------------\n");
+	sprintf(sendline, "\n------------ Five command for client ------------\n");
 	strcat(sendline, " (1) \"cd <dir>\" tp change current directory\n");
 	strcat(sendline, " (2) \"ls\" to list all dir and files on current dir\n");
 	strcat(sendline, " (3) \"upload <file name>\" to upload file to current dir\n");
 	strcat(sendline, " (4) \"download <file name>\" to download file from current dir\n");
 	strcat(sendline, " (5) \"exit\" to terminate connection\n");
-	strcat(sendline, "-------------------------------------------------\n\n");
+	strcat(sendline, "-------------------------------------------------\n");
 	
 	char cwd[200];
 	if(getcwd(cwd, sizeof(cwd))==NULL)

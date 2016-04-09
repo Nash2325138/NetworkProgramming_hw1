@@ -75,6 +75,7 @@ int main (int argc, char **argv)
 			fprintf(stdout, "Please enter a valid command\n");
 		}
 		write(servfd, sendline, strlen(sendline));
+		read_print(servfd, sendline);
 	}
 
 	return 0;
@@ -90,7 +91,7 @@ void read_print(int servfd, char* recvline)
 			exit(9999);
 		}
 	} else {
-		perror("readLine_print error");
+		perror("read_print error");
 		//exit(9999);
 	}
 }
