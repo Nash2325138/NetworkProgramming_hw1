@@ -92,11 +92,12 @@ int main (int argc, char **argv)
 				n = read(servfd, recvline, MAXLINE);
 				recvline[n] = '\0';
 				sscanf(recvline, "%d", &fileSize);
+				fprintf(stdout, "%s\n", recvline);
 				write(servfd, " ", 1);
-				fprintf(stdout, "%d\n", fileSize);
 
 				receiveFileFrom(servfd, fileToDownload, fileSize, recvline);
 				write(servfd, " ", 1);
+				fclose(fileToDownload);
 
 				read_print(servfd, recvline);
 			}
@@ -107,6 +108,7 @@ int main (int argc, char **argv)
 		}
 		write(servfd, "message received\0", 17);
 		read_print(servfd, recvline);
+		//if(strncmp(recvline, "\n------", 7)!=0) read_print(servfd, recvline);
 	}
 
 	return 0;
@@ -135,6 +137,8 @@ void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline)
 		numBytes = fread(sendline, sizeof(char), MAXLINE, fp);
 		numBytes = write(sockfd, sendline, numBytes);
 		fileSize -= numBytes;
+		//fprintf(stdout, "!!!\n%s\n!!!", sendline);
+		//fprintf(stdout, "%d\n", numBytes);
 	}
 	fprintf(stdout, "transfer finish\n");
 }
@@ -146,6 +150,8 @@ void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
 		numBytes = read(sockfd, recvline, MAXLINE);
 		numBytes = fwrite(recvline, sizeof(char), numBytes, fp);
 		fileSize -= numBytes;
+		//fprintf(stdout, "!!!\n%s\n!!!", recvline);
+		//fprintf(stdout, "%d\n", numBytes);
 	}
 	fprintf(stdout, "receive finish\n");
 }
