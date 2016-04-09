@@ -66,7 +66,7 @@ int main (int argc, char **argv)
 		if(strcmp(command, "cd")==0){
 			read_print(servfd, sendline);
 		} else if(strcmp(command, "ls")==0){
-
+			read_print(servfd, sendline);
 		} else if(strcmp(command, "upload")==0){
 
 		} else if(strcmp(command, "download")==0){

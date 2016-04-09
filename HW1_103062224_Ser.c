@@ -19,6 +19,7 @@
 #define LISTENQ 1024
 
 void showMenu(int clifd, char *sendline);
+void showMenu_mini(int clifd, char *sendline);
 void listDir(int clifd, char *sendline);
 ssize_t writen(int fd, const void *vptr, size_t n);
 void hw1_service(int clifd);
@@ -108,7 +109,7 @@ void hw1_service(int clifd)
 			write(clifd, recvline, strlen(recvline)+1 );
 		}
 		else if (strcmp(command, "ls")==0){
-
+			listDir(clifd, sendline);
 		}
 		else if (strcmp(command, "upload")==0){
 
@@ -125,7 +126,7 @@ void hw1_service(int clifd)
 		}
 		read(clifd, recvline, 17);
 		//fprintf(stdout, "%s\n", recvline);
-		showMenu(clifd, sendline);
+		showMenu_mini(clifd, sendline);
 	}
 	if(n < 0) perror("read error in hw1_service()");
 	//listDir(clifd, sendline);
@@ -133,32 +134,33 @@ void hw1_service(int clifd)
 
 void listDir(int clifd, char *sendline)
 {
-    DIR *dir;
-    struct dirent *entry;
-    char tempStr[MAXLINE];
+	DIR *dir;
+	struct dirent *entry;
+	char tempStr[MAXLINE];
+	sendline[0] = '\0';
 
-    if( (dir = opendir("."))==NULL ){
-    	perror("opendir in listdir()");
-    	return;
-    }
+	if( (dir = opendir("."))==NULL ){
+		perror("opendir in listdir()");
+		return;
+	}
     
-    entry = readdir(dir);
-    while(entry!=NULL)
-    {
-    	if(entry->d_type == DT_DIR)
-    		sprintf(tempStr, " - %s/\n", entry->d_name);
-    	else
-    		sprintf(tempStr, " - %s\n", entry->d_name);
+	entry = readdir(dir);
+	while(entry!=NULL)
+	{
+		if(entry->d_type == DT_DIR)
+			sprintf(tempStr, " - %s/\n", entry->d_name);
+		else
+			sprintf(tempStr, " - %s\n", entry->d_name);
 
-    	strcat(sendline, tempStr);
-    	entry = readdir(dir);
-    }
+	 	strcat(sendline, tempStr);
+			entry = readdir(dir);
+	}
 
-    int n = strlen(sendline);
-    sendline[ n ] = '\n';
-    sendline[ n+1 ] = '\0';
-    write(clifd, sendline, n+1);
-    return;
+	int n = strlen(sendline);
+	sendline[ n ] = '\n';
+	sendline[ n+1 ] = '\0';
+	write(clifd, sendline, n+1);
+	return;
 }
 
 void showMenu(int clifd, char *sendline)
@@ -183,7 +185,27 @@ void showMenu(int clifd, char *sendline)
 	write(clifd, sendline, n+1);
 }
 
-
+void showMenu_mini(int clifd, char *sendline)
+{
+	sprintf(sendline, "\n------------ Five command for client ------------\n");
+	strcat(sendline, " (1) \"cd\"  ");
+	strcat(sendline, " (2) \"ls\"  ");
+	strcat(sendline, " (3) \"upload\"  ");
+	strcat(sendline, " (4) \"download\"  ");
+	strcat(sendline, " (5) \"exit\"\n");
+	strcat(sendline, "-------------------------------------------------\n");
+	
+	char cwd[200];
+	if(getcwd(cwd, sizeof(cwd))==NULL)
+		perror("getcwd error in showMenu()");
+	strcat(sendline, "client@server:");
+	strcat(sendline, cwd);
+	strcat(sendline, "$ ");
+	
+	int n = strlen(sendline);
+	sendline[n] = '\0';
+	write(clifd, sendline, n+1);
+}
 
 /* Write "n" bytes to a descriptor. */
 ssize_t writen(int fd, const void *vptr, size_t n)
