@@ -88,7 +88,7 @@ void hw1_service(int clifd)
 	showMenu(clifd, sendline);
 	while( (n=read(clifd, recvline, MAXLINE)) > 0 )
 	{
-		fprintf(stdout, "%s\n", recvline);
+		//fprintf(stdout, "%s\n", recvline);
 		char command[MAXLINE];
 		sscanf(recvline, "%s", command);
 		//fprintf(stdout, "%s\n", command);
@@ -97,16 +97,18 @@ void hw1_service(int clifd)
 			sscanf(recvline, "cd %s", changePath);
 			if( chdir(changePath) < 0 ){
 				perror("chdir error");
-				sprintf(recvline, "cd failed");
+				sprintf(sendline, "cd failed");
 			}
 			else{
 				char cwd[200];
 				if(getcwd(cwd, sizeof(cwd))==NULL) perror("getcwd error in showMenu()");
-				sprintf(recvline, "successfully cd to:");
-				strcat(recvline, cwd);
-				strcat(recvline, "\n\0");
+				sprintf(sendline, "successfully cd to:");
+				strcat(sendline, cwd);
+				strcat(sendline, "\n");
 			}
-			write(clifd, recvline, strlen(recvline)+1 );
+			n = strlen(sendline);
+			sendline[n] = '\0';
+			write(clifd, sendline, n+1 );
 		}
 		else if (strcmp(command, "ls")==0){
 			listDir(clifd, sendline);
@@ -115,7 +117,15 @@ void hw1_service(int clifd)
 
 		}
 		else if (strcmp(command, "download")==0){
+			char fileName[200];
+			sscanf(recvline, "download %s", fileName);
+			FILE *fileToDownload;
+			if( (fileToDownload = fopen(fileName, "r")) == NULL){
+				perror("fopen file to download error");
+				sprintf(sendline, "Fail to open file %s", fileName);
+			} else {
 
+			}
 		}
 		else if (strcmp(command, "exit")==0){
 			return;
