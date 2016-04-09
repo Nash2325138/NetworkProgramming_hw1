@@ -121,7 +121,26 @@ void hw1_service(int clifd)
 		}
 
 		else if (strcmp(command, "upload")==0){
+			char fileName[200];
+			sscanf(recvline, "upload %s", fileName);
+			FILE *fileToUpload;
+			if( (fileToUpload = fopen(fileName, "wb")) == NULL){
+				perror("fopen file to upload error");
+				sprintf(message, "fail to upload\n");
+			} else {
+				int fileSize;
 
+				write(clifd, " ", 1);
+				read(clifd, recvline, MAXLINE);
+				sscanf(recvline, "%d", &fileSize);
+				fprintf(stdout, "%s\n", sendline);
+
+				write(clifd, " ", 1);
+				receiveFileFrom(clifd, fileToUpload, fileSize, recvline);
+				fclose(fileToUpload);
+				sprintf(message, "success to upload\n");
+			}
+			write(clifd, message, strlen(message));
 		}
 
 		else if (strcmp(command, "download")==0){
@@ -138,7 +157,7 @@ void hw1_service(int clifd)
 				rewind(fileToDownload);
 				sprintf(sendline, "%d", fileSize);
 				write(clifd, sendline, strlen(sendline));
-				fprintf(stdout, "%s\n", sendline);
+				//fprintf(stdout, "%s\n", sendline);
 				read(clifd, garbage, sizeof(garbage));
 
 				transFileTo(clifd, fileToDownload, fileSize, sendline);
@@ -155,7 +174,7 @@ void hw1_service(int clifd)
 		else if (strcmp(command, "exit")==0){
 			return;
 		}
-		
+
 		else {
 			fprintf(stdout, "Client entered a invalid command\n");
 			// then discard the content of this recvline
@@ -252,8 +271,8 @@ void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline)
 		numBytes = write(sockfd, sendline, numBytes);
 		fileSize -= numBytes;
 
-		fprintf(stdout, "!!!\n%s\n!!!", sendline);
-		fprintf(stdout, "%d\n", numBytes);
+		//fprintf(stdout, "!!!\n%s\n!!!", sendline);
+		//fprintf(stdout, "%d\n", numBytes);
 	}
 	fprintf(stdout, "transfer finish\n");
 }
@@ -265,8 +284,8 @@ void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
 		numBytes = read(sockfd, recvline, MAXLINE);
 		numBytes = fwrite(recvline, sizeof(char), numBytes, fp);
 		fileSize -= numBytes;
-		fprintf(stdout, "!!!\n%s\n!!!", recvline);
-		fprintf(stdout, "%d\n", numBytes);
+		//fprintf(stdout, "!!!\n%s\n!!!", recvline);
+		//fprintf(stdout, "%d\n", numBytes);
 
 	}
 	fprintf(stdout, "receive finish\n");

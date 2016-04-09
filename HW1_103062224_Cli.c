@@ -81,7 +81,28 @@ int main (int argc, char **argv)
 		}
 
 		else if(strcmp(command, "upload")==0){
+			char fileName[200];
+			sscanf(sendline, "upload %s", fileName);
+			FILE *fileToUpload;
+			if( (fileToUpload = fopen(fileName, "rb")) == NULL){
+				perror("fopen file to upload error");
+			} else {
+				int fileSize;
 
+				fseek(fileToUpload, 0L, SEEK_END);
+				fileSize = ftell(fileToUpload);
+				rewind(fileToUpload);
+
+				read(servfd, garbage, sizeof(garbage));
+				sprintf(sendline, "%d", fileSize);
+				write(servfd, sendline, strlen(sendline));
+				fprintf(stdout, "%s\n", sendline);
+				read(servfd, garbage, sizeof(garbage));
+
+				transFileTo(servfd, fileToUpload, fileSize, sendline);
+				fclose(fileToUpload);
+			}
+			read_print(servfd, recvline);
 		}
 
 		else if(strcmp(command, "download")==0){
@@ -98,7 +119,7 @@ int main (int argc, char **argv)
 				n = read(servfd, recvline, MAXLINE);
 				recvline[n] = '\0';
 				sscanf(recvline, "%d", &fileSize);
-				fprintf(stdout, "%s\n", recvline);
+				//fprintf(stdout, "%s\n", recvline);
 				write(servfd, " ", 1);
 
 				receiveFileFrom(servfd, fileToDownload, fileSize, recvline);
