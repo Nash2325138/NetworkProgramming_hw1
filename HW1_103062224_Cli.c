@@ -74,11 +74,17 @@ int main (int argc, char **argv)
 		sscanf(sendline, "%s", command);
 		if(strcmp(command, "cd")==0){
 			read_print(servfd, recvline);
-		} else if(strcmp(command, "ls")==0){
-			read_print(servfd, recvline);
-		} else if(strcmp(command, "upload")==0){
+		}
 
-		} else if(strcmp(command, "download")==0){
+		else if(strcmp(command, "ls")==0){
+			read_print(servfd, recvline);
+		}
+
+		else if(strcmp(command, "upload")==0){
+
+		}
+
+		else if(strcmp(command, "download")==0){
 			char fileName[200];
 			char fullPath[210];
 			sscanf(sendline, "download %s", fileName);
@@ -101,9 +107,13 @@ int main (int argc, char **argv)
 
 				read_print(servfd, recvline);
 			}
-		} else if(strcmp(command, "exit")==0){
+		}
+
+		else if(strcmp(command, "exit")==0){
 			return 0;
-		} else {
+		}
+
+		else {
 			fprintf(stdout, "Please enter a valid command\n");
 		}
 		write(servfd, "message received\0", 17);

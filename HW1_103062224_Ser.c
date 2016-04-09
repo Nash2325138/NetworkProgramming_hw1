@@ -115,12 +115,15 @@ void hw1_service(int clifd)
 			message[n] = '\0';
 			write(clifd, message, n+1 );
 		}
+
 		else if (strcmp(command, "ls")==0){
 			listDir(clifd, sendline);
 		}
+
 		else if (strcmp(command, "upload")==0){
 
 		}
+
 		else if (strcmp(command, "download")==0){
 			char fileName[200];
 			sscanf(recvline, "download %s", fileName);
@@ -148,9 +151,11 @@ void hw1_service(int clifd)
 			message[n] = '\0';
 			write(clifd, message, n+1);
 		}
+
 		else if (strcmp(command, "exit")==0){
 			return;
 		}
+		
 		else {
 			fprintf(stdout, "Client entered a invalid command\n");
 			// then discard the content of this recvline
