@@ -21,6 +21,8 @@
 void showMenu(int clifd, char *sendline);
 void showMenu_mini(int clifd, char *sendline);
 void listDir(int clifd, char *sendline);
+void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline);
+void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline);
 ssize_t writen(int fd, const void *vptr, size_t n);
 void hw1_service(int clifd);
 
@@ -48,6 +50,11 @@ int main(int argc, char **argv)
 	}
 	int listenfd, connfd;
 	struct sockaddr_in cliaddr, servaddr;
+
+	struct stat st = {0};
+	if(stat("./Upload", &st) == -1){
+		mkdir("./Upload", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	}
 
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -82,10 +89,7 @@ void hw1_service(int clifd)
 	char recvline[MAXLINE+1];
 	char sendline[MAXLINE+1];
 	char message[MAXLINE+1];
-	struct stat st = {0};
-	if(stat("./Upload", &st) == -1){
-		mkdir("./Upload", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	}
+	char garbage[10];
 	showMenu(clifd, sendline);
 	while( (n=read(clifd, recvline, MAXLINE)) > 0 )
 	{
@@ -121,10 +125,21 @@ void hw1_service(int clifd)
 			char fileName[200];
 			sscanf(recvline, "download %s", fileName);
 			FILE *fileToDownload;
-			if( (fileToDownload = fopen(fileName, "r")) == NULL){
+			if( (fileToDownload = fopen(fileName, "rb")) == NULL){
 				perror("fopen file to download error");
 				sprintf(message, "Fail to open file %s", fileName);
 			} else {
+				int fileSize;
+				fseek(fileToDownload, 0L, SEEK_END);
+				fileSize = ftell(fileToDownload);
+				rewind(fileToDownload);
+				sprintf(sendline, "%d", fileSize);
+				fprintf(stdout, "%d\n", fileSize);
+				write(clifd, sendline, strlen(sendline));
+				read(clifd, garbage, sizeof(garbage));
+
+				transFileTo(clifd, fileToDownload, fileSize, sendline);
+				read(clifd, garbage, sizeof(garbage));
 
 				sprintf(message, "Download Complete!");
 			}
@@ -222,7 +237,30 @@ void showMenu_mini(int clifd, char *sendline)
 	write(clifd, sendline, n+1);
 }
 
-/* Write "n" bytes to a descriptor. */
+void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline)
+{
+	int numBytes;
+	while(fileSize > 0)
+	{
+		numBytes = fread(sendline, sizeof(char), MAXLINE, fp);
+		numBytes = write(sockfd, sendline, numBytes);
+		fileSize -= numBytes;
+	}
+	fprintf(stdout, "transfer finish\n");
+}
+void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
+{
+	int numBytes;
+	while(fileSize > 0)
+	{
+		numBytes = read(sockfd, recvline, MAXLINE);
+		numBytes = fwrite(recvline, sizeof(char), numBytes, fp);
+		fileSize -= numBytes;
+	}
+	fprintf(stdout, "receive finish\n");
+}
+/* Wri
+te "n" bytes to a descriptor. */
 ssize_t writen(int fd, const void *vptr, size_t n)
 {
 	size_t nleft;

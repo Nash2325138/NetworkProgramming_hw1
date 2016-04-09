@@ -10,11 +10,14 @@
 #include <errno.h>
 
 #include <string.h>
+#include <sys/stat.h>
 
 #define MAXLINE 2048
 
 
 void read_print(int servfd, char* recvline);
+void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline);
+void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline);
 
 int main (int argc, char **argv)
 {
@@ -22,6 +25,7 @@ int main (int argc, char **argv)
 	int servfd, n;
 	char recvline[MAXLINE+1];
 	char sendline[MAXLINE+1];
+	char garbage[10];
 	struct sockaddr_in servaddr;
 	if(argc!=3){
 		fprintf(stderr, "Usage: ./<executable file> <server IP> <server port>\n");
@@ -31,6 +35,11 @@ int main (int argc, char **argv)
 	if( (servfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
 		perror("socket error");
 		exit(9999);
+	}
+
+	struct stat st = {0};
+	if(stat("./Download", &st) == -1){
+		mkdir("./Download", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	}
 
 	servaddr.sin_family = AF_INET;
@@ -64,20 +73,40 @@ int main (int argc, char **argv)
 		char command[MAXLINE];
 		sscanf(sendline, "%s", command);
 		if(strcmp(command, "cd")==0){
-			read_print(servfd, sendline);
+			read_print(servfd, recvline);
 		} else if(strcmp(command, "ls")==0){
-			read_print(servfd, sendline);
+			read_print(servfd, recvline);
 		} else if(strcmp(command, "upload")==0){
 
 		} else if(strcmp(command, "download")==0){
+			char fileName[200];
+			char fullPath[210];
+			sscanf(sendline, "download %s", fileName);
+			strcpy(fullPath, "./Download/");
+			strcat(fullPath, fileName);
+			FILE *fileToDownload;
+			if( (fileToDownload = fopen(fullPath, "wb")) == NULL){
+				perror("fopen file to download error");
+			} else {
+				int fileSize;
+				n = read(servfd, recvline, MAXLINE);
+				recvline[n] = '\0';
+				sscanf(recvline, "%d", &fileSize);
+				write(servfd, " ", 1);
+				fprintf(stdout, "%d\n", fileSize);
 
+				receiveFileFrom(servfd, fileToDownload, fileSize, recvline);
+				write(servfd, " ", 1);
+
+				read_print(servfd, recvline);
+			}
 		} else if(strcmp(command, "exit")==0){
 			return 0;
 		} else {
 			fprintf(stdout, "Please enter a valid command\n");
 		}
 		write(servfd, "message received\0", 17);
-		read_print(servfd, sendline);
+		read_print(servfd, recvline);
 	}
 
 	return 0;
@@ -96,4 +125,27 @@ void read_print(int servfd, char* recvline)
 		perror("read_print error");
 		//exit(9999);
 	}
+}
+
+void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline)
+{
+	int numBytes;
+	while(fileSize > 0)
+	{
+		numBytes = fread(sendline, sizeof(char), MAXLINE, fp);
+		numBytes = write(sockfd, sendline, numBytes);
+		fileSize -= numBytes;
+	}
+	fprintf(stdout, "transfer finish\n");
+}
+void receiveFileFrom(int sockfd, FILE *fp, int fileSize, char *recvline)
+{
+	int numBytes;
+	while(fileSize > 0)
+	{
+		numBytes = read(sockfd, recvline, MAXLINE);
+		numBytes = fwrite(recvline, sizeof(char), numBytes, fp);
+		fileSize -= numBytes;
+	}
+	fprintf(stdout, "receive finish\n");
 }
