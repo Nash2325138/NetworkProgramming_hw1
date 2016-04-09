@@ -81,6 +81,7 @@ void hw1_service(int clifd)
 	int n;
 	char recvline[MAXLINE+1];
 	char sendline[MAXLINE+1];
+	char message[MAXLINE+1];
 	struct stat st = {0};
 	if(stat("./Upload", &st) == -1){
 		mkdir("./Upload", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -97,18 +98,18 @@ void hw1_service(int clifd)
 			sscanf(recvline, "cd %s", changePath);
 			if( chdir(changePath) < 0 ){
 				perror("chdir error");
-				sprintf(sendline, "cd failed");
+				sprintf(message, "cd failed");
 			}
 			else{
 				char cwd[200];
 				if(getcwd(cwd, sizeof(cwd))==NULL) perror("getcwd error in showMenu()");
-				sprintf(sendline, "successfully cd to:");
-				strcat(sendline, cwd);
-				strcat(sendline, "\n");
+				sprintf(message, "successfully cd to:");
+				strcat(message, cwd);
+				strcat(message, "\n");
 			}
-			n = strlen(sendline);
-			sendline[n] = '\0';
-			write(clifd, sendline, n+1 );
+			n = strlen(message);
+			message[n] = '\0';
+			write(clifd, message, n+1 );
 		}
 		else if (strcmp(command, "ls")==0){
 			listDir(clifd, sendline);
@@ -122,10 +123,14 @@ void hw1_service(int clifd)
 			FILE *fileToDownload;
 			if( (fileToDownload = fopen(fileName, "r")) == NULL){
 				perror("fopen file to download error");
-				sprintf(sendline, "Fail to open file %s", fileName);
+				sprintf(message, "Fail to open file %s", fileName);
 			} else {
 
+				sprintf(message, "Download Complete!");
 			}
+			n = strlen(message);
+			message[n] = '\0';
+			write(clifd, message, n+1);
 		}
 		else if (strcmp(command, "exit")==0){
 			return;
@@ -237,98 +242,3 @@ ssize_t writen(int fd, const void *vptr, size_t n)
  	}
 	return (n);
 }
-
-
-/*
-int main(int argc, char const *argv[])
-{
-	int sockfd, connfd, listenfd, maxfd;
-	int i, maxi;
-	int nready, client[FD_SETSIZE];
-	ssize_t n;
-	fd_set rset, allset;
-	char line[MAXLINE];
-	socklen_t clilen;
-	struct sockaddr_in cliaddr, servaddr;
-
-	if( (listenfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
-		printf("socket error\n");
-	}
-
-	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(SERV_PORT);
-
-	if( (bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr))) < 0){
-		printf("bind error\n");
-	}
-
-	if( listen(listenfd, 1024) < 0){ // define LISTENQ 1024 (backlog)
-		printf("listen error\n");
-	}
-
-	maxfd = listenfd;
-	maxi = -1;
-	for(i=0 ; i < FD_SETSIZE ; i++){
-		client[i] = -1;
-	}
-
-	FD_ZERO(&allset);
-	FD_SET(listenfd, &allset);
-
-	while(1)
-	{
-		rset = allset;
-		nready = select(maxfd+1, &rset, NULL, NULL, NULL);
-
-		if(FD_ISSET(listenfd, &rset)){
-			clilen = sizeof(cliaddr);
-			if( (connfd = accept(listenfd, (struct sockaddr *) &cliaddr, &clilen)) < 0 ){
-				printf("accept error\n");
-			} else {
-				printf("accept one connection\n");
-			}
-
-			for(i=0 ; i<FD_SETSIZE ; i++){
-				if(client[i] < 0){
-					client[i] = connfd;
-					break;
-				}
-			}
-
-			if(i >= FD_SETSIZE) printf("Too many clients\n");
-
-			FD_SET(connfd, &allset);
-			if(connfd > maxfd) maxfd = connfd;
-			if(i > maxi) maxi = i;
-			nready--;
-			if(nready <= 0) continue;
-		}
-
-		for(i=0 ; i<maxi ; i++){
-			if( client[i] < 0 ) continue;
-
-			sockfd = client[i];
-
-			if(FD_ISSET(sockfd, &rset)){
-				n = read(sockfd, line, MAXLINE);
-				if(n > 0) printf("read something");
-				if(n==0){
-					close(sockfd);
-					FD_CLR(sockfd, &allset);
-					client[i] = -1;
-				} else {
-					writen(sockfd, line, n);
-				}
-				nready--;
-				if(nready <= 0) break;
-			}
-		}
-
-
-	}
-	
-	return 0;
-}
-*/
