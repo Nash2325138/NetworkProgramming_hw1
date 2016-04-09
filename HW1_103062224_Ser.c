@@ -118,7 +118,7 @@ void hw1_service(int clifd)
 
 		}
 		else if (strcmp(command, "exit")==0){
-
+			return;
 		}
 		else {
 			fprintf(stdout, "Client entered a invalid command\n");

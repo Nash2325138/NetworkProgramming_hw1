@@ -72,7 +72,7 @@ int main (int argc, char **argv)
 		} else if(strcmp(command, "download")==0){
 
 		} else if(strcmp(command, "exit")==0){
-
+			return 0;
 		} else {
 			fprintf(stdout, "Please enter a valid command\n");
 		}
