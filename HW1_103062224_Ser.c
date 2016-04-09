@@ -94,7 +94,18 @@ void hw1_service(int clifd)
 		if(strcmp(command, "cd")==0){
 			char changePath[200];
 			sscanf(recvline, "cd %s", changePath);
-			if( chdir(changePath) < 0 ) perror("chdir error");
+			if( chdir(changePath) < 0 ){
+				perror("chdir error");
+				sprintf(recvline, "cd failed");
+			}
+			else{
+				char cwd[200];
+				if(getcwd(cwd, sizeof(cwd))==NULL) perror("getcwd error in showMenu()");
+				sprintf(recvline, "successfully cd to:");
+				strcat(recvline, cwd);
+				strcat(recvline, "\n\0");
+			}
+			write(clifd, recvline, strlen(recvline)+1 );
 		}
 		else if (strcmp(command, "ls")==0){
 
@@ -112,6 +123,8 @@ void hw1_service(int clifd)
 			fprintf(stdout, "Client entered a invalid command\n");
 			// then discard the content of this recvline
 		}
+		read(clifd, recvline, 17);
+		//fprintf(stdout, "%s\n", recvline);
 		showMenu(clifd, sendline);
 	}
 	if(n < 0) perror("read error in hw1_service()");
@@ -151,23 +164,23 @@ void listDir(int clifd, char *sendline)
 void showMenu(int clifd, char *sendline)
 {
 	sprintf(sendline, "\n------------ Five command for client ------------\n");
-	strcat(sendline, " (1) \"cd <dir>\" tp change current directory\n");
-	strcat(sendline, " (2) \"ls\" to list all dir and files on current dir\n");
-	strcat(sendline, " (3) \"upload <file name>\" to upload file to current dir\n");
-	strcat(sendline, " (4) \"download <file name>\" to download file from current dir\n");
-	strcat(sendline, " (5) \"exit\" to terminate connection\n");
+	strcat(sendline, " (1) \"cd <dir>\" : to change current directory\n");
+	strcat(sendline, " (2) \"ls\"       : to list all dir and files on current dir\n");
+	strcat(sendline, " (3) \"upload <file name>\"   : to upload file to current dir\n");
+	strcat(sendline, " (4) \"download <file name>\" : to download file from current dir\n");
+	strcat(sendline, " (5) \"exit\"     : to terminate connection\n");
 	strcat(sendline, "-------------------------------------------------\n");
 	
 	char cwd[200];
 	if(getcwd(cwd, sizeof(cwd))==NULL)
-		perror("getcwd in showMenu():");
+		perror("getcwd error in showMenu()");
 	strcat(sendline, "client@server:");
 	strcat(sendline, cwd);
 	strcat(sendline, "$ ");
 	
 	int n = strlen(sendline);
 	sendline[n] = '\0';
-	write(clifd, sendline, n);
+	write(clifd, sendline, n+1);
 }
 
 

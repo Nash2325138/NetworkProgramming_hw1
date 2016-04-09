@@ -59,10 +59,12 @@ int main (int argc, char **argv)
 	// A terminating null character is automatically appended to sendline after fgets().
 	while( fgets(sendline, MAXLINE, stdin) != NULL)
 	{
+		write(servfd, sendline, strlen(sendline));
+		
 		char command[MAXLINE];
 		sscanf(sendline, "%s", command);
 		if(strcmp(command, "cd")==0){
-
+			read_print(servfd, sendline);
 		} else if(strcmp(command, "ls")==0){
 
 		} else if(strcmp(command, "upload")==0){
@@ -74,7 +76,7 @@ int main (int argc, char **argv)
 		} else {
 			fprintf(stdout, "Please enter a valid command\n");
 		}
-		write(servfd, sendline, strlen(sendline));
+		write(servfd, "message received\0", 17);
 		read_print(servfd, sendline);
 	}
 
@@ -88,7 +90,7 @@ void read_print(int servfd, char* recvline)
 		recvline[n] = 0;
 		if(fputs(recvline, stdout)==EOF){
 			perror("fputs error");
-			exit(9999);
+			//exit(9999);
 		}
 	} else {
 		perror("read_print error");
