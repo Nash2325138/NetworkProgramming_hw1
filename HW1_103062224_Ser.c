@@ -89,7 +89,7 @@ void hw1_service(int clifd)
 	{
 		char command[MAXLINE];
 		sscanf(recvline, "%s", command);
-		//fprintf(stdout, "%s\n", command);
+		fprintf(stdout, "%s\n", command);
 		if(strcmp(command, "cd")==0){
 
 		} else if(strcmp(command, "ls")==0){
@@ -101,8 +101,8 @@ void hw1_service(int clifd)
 		} else if(strcmp(command, "exit")==0){
 
 		} else {
-			sprintf(sendline, "Please enter a valid command\n");
-			write(clifd, sendline, strlen(sendline));
+			fprintf(stdout, "Client entered a invalid command\n");
+			// then discard the content of this recvline
 		}
 	}
 	if(n < 0) perror("read error in hw1_service()");
@@ -152,7 +152,7 @@ void showMenu(int clifd, char *sendline)
 	char cwd[200];
 	if(getcwd(cwd, sizeof(cwd))==NULL)
 		perror("getcwd in showMenu():");
-	strcat(sendline, "client@server: ");
+	strcat(sendline, "client@server:");
 	strcat(sendline, cwd);
 	strcat(sendline, "$ ");
 	
