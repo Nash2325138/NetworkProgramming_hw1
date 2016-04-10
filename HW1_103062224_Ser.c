@@ -34,7 +34,7 @@ void handler(int signo)
 	for(;;){
 		pid = waitpid(-1, &stat, WCONTINUED);
 		if(pid == -1) break;
-		printf("pid: %d terminated.\n", pid);
+		printf("stat:%d, pid: %d terminated.\n", stat, pid);
 	}
 	
 	/*pid = wait(&stats);
@@ -64,6 +64,7 @@ int main(int argc, char **argv)
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
 	listen(listenfd, LISTENQ);
+	signal(SIGCHLD, handler);
 
 	for(;;)
 	{

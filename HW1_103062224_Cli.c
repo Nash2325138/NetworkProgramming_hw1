@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 
 #define MAXLINE 2048
-
+#define ZOMBIE
 
 void read_print(int servfd, char* recvline);
 void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline);
