@@ -32,9 +32,9 @@ void handler(int signo)
 	int stat;
 
 	for(;;){
-		pid = waitpid(-1, &stat, WCONTINUED);
+		pid = waitpid(WAIT_ANY, &stat, WCONTINUED);
 		if(pid == -1) break;
-		printf("stat:%d, pid: %d terminated.\n", stat, pid);
+		//printf("stat:%d, pid: %d terminated.\n", stat, pid);
 	}
 	
 	/*pid = wait(&stats);

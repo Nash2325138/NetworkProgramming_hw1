@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 
 #define MAXLINE 2048
-#define ZOMBIE
+//#define ZOMBIE
 
 void read_print(int servfd, char* recvline);
 void transFileTo(int sockfd, FILE *fp, int fileSize, char *sendline);
@@ -31,6 +31,11 @@ int main (int argc, char **argv)
 		fprintf(stderr, "Usage: ./<executable file> <server IP> <server port>\n");
 		exit(9999);
 	}
+
+#ifdef ZOMBIE
+int i;
+for(i=0 ; i<5 ; i++) {
+#endif
 
 	if( (servfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
 		perror("socket error");
@@ -54,7 +59,9 @@ int main (int argc, char **argv)
 		perror("connect error");
 		exit(9999);
 	}
-
+#ifdef ZOMBIE
+}
+#endif
 	/*while( (n=read(servfd, recvline, MAXLINE)) > 0){
 		recvline[n] = '\0';
 		if(fputs(recvline, stdout)==EOF){
